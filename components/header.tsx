@@ -66,7 +66,7 @@ export function Header() {
             اطلب الآن
           </a>
           <button
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-[oklch(0.88_0.01_90)]/50 bg-background/80 backdrop-blur-sm"
+            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-border/50 bg-background/80 backdrop-blur-sm"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="القائمة"
           >

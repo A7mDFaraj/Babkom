@@ -43,10 +43,10 @@ export function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-11 h-11 rounded-lg gold-gradient flex items-center justify-center shadow-gold">
-                <span className="text-white font-bold">WPC</span>
+                <span className="text-white font-bold">بابكم</span>
               </div>
               <div>
-                <p className="font-bold text-lg text-white">أبواب الواح</p>
+                <p className="font-bold text-lg text-white">بابكم للأبواب</p>
               </div>
             </div>
             <p className="text-foreground/50 leading-relaxed mb-6 max-w-md">
@@ -105,7 +105,7 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-dark-border pt-6 text-center text-foreground/30 text-sm">
-          <p>© {new Date().getFullYear()} أبواب الواح - WPC Premium Doors. جميع الحقوق محفوظة.</p>
+          <p>© {new Date().getFullYear()} بابكم - Premium Doors. جميع الحقوق محفوظة.</p>
         </div>
       </div>
     </footer>

@@ -110,7 +110,7 @@ export function TestimonialsSection() {
             )}
 
             {/* Author */}
-            <div className="flex items-center gap-3 pt-4 border-t border-[oklch(0.88_0.01_90)]">
+            <div className="flex items-center gap-3 pt-4 border-t border-border">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-white font-bold text-sm">
                 {t.avatar}
               </div>

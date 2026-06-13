@@ -1,8 +1,18 @@
 "use client";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useMemo } from "react";
 
-// Deterministic random seeds to avoid React eslint-plugin-errors
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useMemo, useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+
+// Lazy load the 3D canvas to avoid SSR issues with Three.js
+const Canvas = dynamic(
+  () => import("@react-three/fiber").then((mod) => mod.Canvas),
+  { ssr: false }
+);
+
+// Deterministic seeds for particles (reduced to 10 for performance)
 const SEEDS = [
   { x: 12, y: 45, dx: 80, dy: -120, d: 5, dl: 1 },
   { x: 35, y: 70, dx: -60, dy: -90, d: 7, dl: 3 },
@@ -14,17 +24,261 @@ const SEEDS = [
   { x: 10, y: 55, dx: -70, dy: -100, d: 7.5, dl: 0.8 },
   { x: 65, y: 90, dx: 85, dy: -75, d: 5.2, dl: 3.5 },
   { x: 28, y: 30, dx: -55, dy: -140, d: 6.8, dl: 1.2 },
-  { x: 90, y: 75, dx: 45, dy: -95, d: 4.8, dl: 2.8 },
-  { x: 50, y: 50, dx: -30, dy: -160, d: 7.2, dl: 0.3 },
-  { x: 5, y: 10, dx: 95, dy: -85, d: 5.8, dl: 4.2 },
-  { x: 78, y: 20, dx: -80, dy: -110, d: 6.2, dl: 1.8 },
-  { x: 42, y: 65, dx: 60, dy: -70, d: 7.8, dl: 3.2 },
-  { x: 95, y: 35, dx: -50, dy: -125, d: 4.2, dl: 0.6 },
-  { x: 15, y: 92, dx: 75, dy: -88, d: 6.6, dl: 2.2 },
-  { x: 60, y: 8, dx: -65, dy: -145, d: 5.4, dl: 3.8 },
-  { x: 33, y: 48, dx: 88, dy: -72, d: 7.6, dl: 1.6 },
-  { x: 85, y: 55, dx: -42, dy: -98, d: 4.6, dl: 2.6 },
 ];
+
+// ─── Inline 3D Door Component for Hero ──────────────────────────────────
+function HeroDoorModel() {
+  const groupRef = useRef<THREE.Group>(null);
+
+  const doorColor = new THREE.Color("#8B6F47");
+  const frameColor = new THREE.Color("#2a1f0e");
+  const handleColor = new THREE.Color("#d4a853");
+  const grainColor = new THREE.Color("#8B6F47").multiplyScalar(0.85);
+  const panelOuterColor = new THREE.Color("#8B6F47").multiplyScalar(0.8);
+  const panelInnerColor = new THREE.Color("#8B6F47").multiplyScalar(0.9);
+  const panelBorderColor = new THREE.Color("#8B6F47").multiplyScalar(1.1);
+
+
+
+  useFrame((state: { clock: { elapsedTime: number } }) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y =
+        Math.sin(state.clock.elapsedTime * 0.4) * 0.2;
+    }
+  });
+
+  const doorWidth = 0.76;
+  const doorHeight = 1.78;
+  const doorDepth = 0.06;
+
+  return (
+    <group ref={groupRef} position={[0, doorHeight / 2 - 0.5, 0]}>
+      {/* Door frame */}
+      <mesh castShadow receiveShadow>
+        <boxGeometry
+          args={[doorWidth + 0.16, doorHeight + 0.16, doorDepth + 0.04]}
+        />
+        <meshStandardMaterial
+          color={frameColor}
+          roughness={0.3}
+          metalness={0.1}
+        />
+      </mesh>
+
+      {/* Door body */}
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[doorWidth, doorHeight, doorDepth]} />
+        <meshStandardMaterial
+          color={doorColor}
+          roughness={0.4}
+          metalness={0.05}
+        />
+      </mesh>
+
+      {/* Wood grain lines */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <mesh
+          key={`grain-${i}`}
+          position={[
+            0,
+            doorHeight * 0.4 - i * doorHeight * 0.1,
+            doorDepth / 2 + 0.001,
+          ]}
+        >
+          <boxGeometry args={[doorWidth * 0.95, 0.003, 0.001]} />
+          <meshStandardMaterial
+            color={grainColor}
+            roughness={0.6}
+            transparent
+            opacity={0.15}
+          />
+        </mesh>
+      ))}
+
+      {/* Classic panels - top */}
+      <group>
+        <mesh
+          position={[
+            -doorWidth * 0.28,
+            doorHeight * 0.22,
+            -doorDepth / 2 - 0.005,
+          ]}
+        >
+          <boxGeometry
+            args={[doorWidth * 0.56 + 0.04, doorHeight * 0.38 + 0.04, 0.02]}
+          />
+          <meshStandardMaterial
+            color={panelOuterColor}
+            roughness={0.5}
+            metalness={0.02}
+          />
+        </mesh>
+        <mesh
+          position={[
+            -doorWidth * 0.28,
+            doorHeight * 0.22,
+            -doorDepth / 2 - 0.015,
+          ]}
+        >
+          <boxGeometry
+            args={[doorWidth * 0.56 - 0.06, doorHeight * 0.38 - 0.06, 0.01]}
+          />
+          <meshStandardMaterial
+            color={panelInnerColor}
+            roughness={0.3}
+            metalness={0.05}
+          />
+        </mesh>
+        <mesh
+          position={[
+            -doorWidth * 0.28,
+            doorHeight * 0.22,
+            -doorDepth / 2 - 0.02,
+          ]}
+        >
+          <boxGeometry
+            args={[doorWidth * 0.56 + 0.02, doorHeight * 0.38 + 0.02, 0.005]}
+          />
+          <meshStandardMaterial
+            color={panelBorderColor}
+            roughness={0.3}
+            metalness={0.1}
+          />
+        </mesh>
+      </group>
+
+      {/* Classic panels - bottom */}
+      <group>
+        <mesh
+          position={[
+            -doorWidth * 0.28,
+            -doorHeight * 0.22,
+            -doorDepth / 2 - 0.005,
+          ]}
+        >
+          <boxGeometry
+            args={[doorWidth * 0.56 + 0.04, doorHeight * 0.38 + 0.04, 0.02]}
+          />
+          <meshStandardMaterial
+            color={panelOuterColor}
+            roughness={0.5}
+            metalness={0.02}
+          />
+        </mesh>
+        <mesh
+          position={[
+            -doorWidth * 0.28,
+            -doorHeight * 0.22,
+            -doorDepth / 2 - 0.015,
+          ]}
+        >
+          <boxGeometry
+            args={[doorWidth * 0.56 - 0.06, doorHeight * 0.38 - 0.06, 0.01]}
+          />
+          <meshStandardMaterial
+            color={panelInnerColor}
+            roughness={0.3}
+            metalness={0.05}
+          />
+        </mesh>
+      </group>
+
+      {/* Door handle */}
+      <group position={[doorWidth / 2 - 0.12, 0, doorDepth / 2 + 0.02]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.035, 0.035, 0.35, 16]} />
+          <meshStandardMaterial
+            color={handleColor}
+            roughness={0.2}
+            metalness={0.8}
+          />
+        </mesh>
+        <mesh position={[0, 0.22, 0]} castShadow>
+          <cylinderGeometry args={[0.015, 0.015, 0.25, 16]} />
+          <meshStandardMaterial
+            color={handleColor}
+            roughness={0.15}
+            metalness={0.9}
+          />
+        </mesh>
+        <mesh position={[0, 0.36, 0]} castShadow>
+          <sphereGeometry args={[0.025, 16, 16]} />
+          <meshStandardMaterial
+            color={handleColor}
+            roughness={0.1}
+            metalness={0.95}
+          />
+        </mesh>
+      </group>
+
+      {/* Keyhole */}
+      <mesh
+        position={[doorWidth / 2 - 0.12, -0.05, doorDepth / 2 + 0.03]}
+      >
+        <cylinderGeometry args={[0.012, 0.012, 0.01, 8]} />
+        <meshStandardMaterial
+          color="#1a1a1a"
+          roughness={0.5}
+          metalness={0.5}
+        />
+      </mesh>
+
+      {/* Top decorative element */}
+      <mesh position={[0, doorHeight / 2 + 0.04, 0]}>
+        <boxGeometry args={[doorWidth * 0.8, 0.03, doorDepth + 0.02]} />
+        <meshStandardMaterial
+          color={panelBorderColor}
+          roughness={0.3}
+          metalness={0.1}
+        />
+      </mesh>
+
+      {/* Bottom decorative element */}
+      <mesh position={[0, -doorHeight / 2 - 0.04, 0]}>
+        <boxGeometry args={[doorWidth * 0.8, 0.03, doorDepth + 0.02]} />
+        <meshStandardMaterial
+          color={panelBorderColor}
+          roughness={0.3}
+          metalness={0.1}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Hero 3D Scene ──────────────────────────────────────────────────────
+function HeroDoorScene() {
+  return (
+    <>
+      <perspectiveCamera />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow />
+      <directionalLight
+        position={[-3, 5, -2]}
+        intensity={0.5}
+        color="#f0e6d3"
+      />
+      <pointLight
+        position={[0, 3, 2]}
+        intensity={0.8}
+        color="#fff5e6"
+        distance={10}
+      />
+
+      <HeroDoorModel />
+
+      {/* Floor */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -0.51, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[10, 10]} />
+        <meshStandardMaterial color="#1a1410" roughness={0.8} metalness={0.1} />
+      </mesh>
+    </>
+  );
+}
 
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -32,6 +286,14 @@ export function Hero() {
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const y2 = useTransform(scrollYProgress, [0, 1], [0, -100]);
   const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  // FIX: useTransform must be called at top level, not inside JSX
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -50]);
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const particles = useMemo(
     () =>
@@ -64,7 +326,12 @@ export function Hero() {
           style={{ y: y2 }}
           className="absolute bottom-[10%] left-[5%] w-[400px] h-[400px] md:w-[600px] md:h-[600px] rounded-full"
           animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 10, repeat: Infinity, delay: 2, ease: "easeInOut" }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            delay: 2,
+            ease: "easeInOut",
+          }}
         />
 
         {/* Grid pattern overlay */}
@@ -81,6 +348,7 @@ export function Hero() {
           <motion.div
             key={s.id}
             className="absolute w-1 h-1 bg-gold-400/30 rounded-full"
+            style={{ willChange: "transform, opacity" }}
             initial={{ x: `${s.x}%`, y: `${s.y}%`, scale: 0, opacity: 0 }}
             animate={{
               scale: [0, 1, 0],
@@ -99,7 +367,7 @@ export function Hero() {
 
       {/* Content */}
       <motion.div
-        style={{ opacity, y: useTransform(scrollYProgress, [0, 1], [0, -50]) }}
+        style={{ opacity, y: contentY }}
         className="relative z-10 max-w-7xl mx-auto px-6 w-full"
       >
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen pt-32 pb-20">
@@ -120,35 +388,34 @@ export function Hero() {
             </motion.div>
 
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 tracking-tight"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <span className="text-white">أبواب</span>
-              <br />
-              <span className="gold-text-gradient">WPC</span>
-              <br />
-              <span className="text-white">الاستثنائية</span>
+              <span className="gold-text-gradient text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] drop-shadow-2xl">
+                بابكم
+              </span>
             </motion.h1>
 
+            <motion.h2
+              className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-8 drop-shadow-lg"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
+              <span className="gold-text-gradient">بابكم</span> باب راحتك
+            </motion.h2>
+
             <motion.p
-              className="text-lg md:text-xl text-foreground/60 mb-4 max-w-lg leading-relaxed"
+              className="text-lg md:text-xl text-foreground/80 mb-10 max-w-lg leading-relaxed bg-dark-secondary/40 p-6 rounded-2xl border border-gold-500/10 backdrop-blur-sm"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              اكتشف عالماً من الفخامة والأناقة لأبواب المنازل. مصنوعة بأعلى معايير الجودة،{" "}
+              اكتشف عالماً من الفخامة والأناقة لأبواب المنازل (WPC). مصنوعة
+              بأعلى معايير الجودة،{" "}
               مقاومة للرطوبة والحرارة — مثالية للمناخ السعودي.
-            </motion.p>
-
-            <motion.p
-              className="text-xl md:text-2xl font-bold text-gold-400 mb-10 max-w-lg leading-relaxed"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            >
-              بابكم باب راحتك
             </motion.p>
 
             <motion.div
@@ -206,102 +473,68 @@ export function Hero() {
                   <p className="text-2xl md:text-3xl font-bold gold-text-gradient">
                     {stat.value}
                   </p>
-                  <p className="text-sm text-foreground/50 mt-1">{stat.label}</p>
+                  <p className="text-sm text-foreground/50 mt-1">
+                    {stat.label}
+                  </p>
                 </div>
               ))}
             </motion.div>
           </div>
 
-          {/* 3D Door Visual */}
+          {/* 3D Door Visual — Real Three.js */}
           <div className="order-1 lg:order-none relative flex items-center justify-center">
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
-              style={{ perspective: 1000 }}
-              className="relative w-[320px] sm:w-[400px] md:w-[450px]"
+              className="relative w-[320px] sm:w-[400px] md:w-[450px] aspect-[3/4]"
             >
-              {/* Door frame */}
-              <div className="relative aspect-[3/5]">
-                {/* Glow behind door */}
-                <motion.div
-                  className="absolute inset-[-40%] rounded-full"
-                  style={{
-                    background:
-                      "radial-gradient(circle, oklch(0.65 0.16 82 / 0.2) 0%, transparent 60%)",
-                  }}
-                  animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                />
+              {/* Glow behind door */}
+              <motion.div
+                className="absolute inset-[-40%] rounded-full pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(212, 168, 83, 0.2) 0%, transparent 60%)",
+                }}
+                animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
 
-                {/* Door body */}
-                <motion.div
-                  className="absolute inset-0 rounded-2xl overflow-hidden"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #8B6F47 0%, #A0845C 25%, #C4A265 50%, #A0845C 75%, #8B6F47 100%)",
-                    transformStyle: "preserve-3d",
-                    boxShadow:
-                      "0 50px 100px oklch(0 0 0 / 0.4), inset 0 -5px 15px oklch(0 0 0 / 0.2)",
-                  }}
-                  animate={{ rotateY: [0, 8, 0, -8, 0] }}
-                  transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+              {/* 3D Canvas */}
+              {isMounted ? (
+                <Suspense
+                  fallback={
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 border-4 border-gold-500/30 border-t-gold-500 rounded-full animate-spin" />
+                    </div>
+                  }
                 >
-                  {/* Wood grain effect */}
-                  <div
-                    className="absolute inset-0 opacity-30"
-                    style={{
-                      backgroundImage:
-                        "repeating-linear-gradient(90deg, transparent, transparent 8px, oklch(0 0 0 / 0.1) 8px, oklch(0 0 0 / 0.1) 9px)",
-                    }}
-                  />
+                  <Canvas
+                    shadows
+                    camera={{ position: [0, 1.2, 3], fov: 45 }}
+                    gl={{ antialias: true, alpha: true }}
+                    style={{ background: "transparent" }}
+                  >
+                    <HeroDoorScene />
+                  </Canvas>
+                </Suspense>
+              ) : (
+                /* CSS fallback for SSR */
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 border-4 border-gold-500/30 border-t-gold-500 rounded-full animate-spin" />
+                </div>
+              )}
 
-                  {/* Door panels */}
-                  <div className="absolute inset-[15%] border-4 border-white/20 rounded-lg" />
-                  <div className="absolute inset-[45%] w-[60%] mx-auto border-4 border-white/20 rounded-lg" />
-
-                  {/* Door handle */}
-                  <motion.div
-                    className="absolute top-[48%] -translate-y-1/2 w-3 h-12 left-[75%]"
-                    style={{
-                      background: "linear-gradient(180deg, #d4a853, #b8860b, #d4a853)",
-                      borderRadius: 2,
-                      boxShadow: "0 2px 8px oklch(0 0 0 / 0.3)",
-                    }}
-                  />
-
-                  {/* Light reflection */}
-                  <motion.div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, transparent 40%, white/10 50%, transparent 60%)",
-                    }}
-                    animate={{ x: ["-100%", "200%"] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                  />
-                </motion.div>
-
-                {/* Door frame border */}
-                <motion.div
-                  className="absolute -inset-[8px] rounded-3xl pointer-events-none"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--gold-300), var(--gold-600), var(--gold-300))",
-                  }}
-                  animate={{ opacity: [0.4, 0.8, 0.4] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                />
-
-                {/* Floating label */}
-                <motion.div
-                  className="absolute -bottom-6 left-1/2 -translate-x-1/2 glass-morphism px-6 py-3 rounded-2xl shadow-xl"
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
-                  <p className="text-sm font-semibold text-gold-400">✦ Premium Collection</p>
-                </motion.div>
-              </div>
+              {/* Floating label */}
+              <motion.div
+                className="absolute -bottom-6 left-1/2 -translate-x-1/2 glass-morphism px-6 py-3 rounded-2xl shadow-xl z-10"
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                <p className="text-sm font-semibold text-gold-400">
+                  ✦ Premium Collection
+                </p>
+              </motion.div>
             </motion.div>
           </div>
         </div>

@@ -159,7 +159,7 @@ export function ContactForm() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="أدخل اسمك"
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -171,7 +171,7 @@ export function ContactForm() {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="05XXXXXXXX"
                     dir="ltr"
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
                   />
                 </div>
               </div>
@@ -186,7 +186,7 @@ export function ContactForm() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="example@email.com"
                     dir="ltr"
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -195,7 +195,7 @@ export function ContactForm() {
                     required
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
                   >
                     <option value="">اختر المدينة</option>
                     {cities.map((city) => (
@@ -212,7 +212,7 @@ export function ContactForm() {
                   required
                   value={formData.doorType}
                   onChange={(e) => setFormData({ ...formData, doorType: e.target.value })}
-                  className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
+                  className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
                 >
                   <option value="">اختر نوع الباب</option>
                   <option value="classic">كلاسيكي</option>
@@ -234,7 +234,7 @@ export function ContactForm() {
                     onChange={(e) => setFormData({ ...formData, width: e.target.value })}
                     placeholder="90"
                     dir="ltr"
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -246,7 +246,7 @@ export function ContactForm() {
                     onChange={(e) => setFormData({ ...formData, height: e.target.value })}
                     placeholder="210"
                     dir="ltr"
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all"
                   />
                 </div>
               </div>
@@ -258,7 +258,7 @@ export function ContactForm() {
                   <select
                     value={formData.color}
                     onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
                   >
                     <option value="">اختر اللون</option>
                     <option value="gold">ذهبي كلاسيكي</option>
@@ -274,7 +274,7 @@ export function ContactForm() {
                   <select
                     value={formData.panelStyle}
                     onChange={(e) => setFormData({ ...formData, panelStyle: e.target.value })}
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
                   >
                     <option value="">اختر التصميم</option>
                     <option value="classic">كلاسيكي</option>
@@ -288,7 +288,7 @@ export function ContactForm() {
                   <select
                     value={formData.handleStyle}
                     onChange={(e) => setFormData({ ...formData, handleStyle: e.target.value })}
-                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
+                    className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all text-foreground"
                   >
                     <option value="">اختر المقبض</option>
                     <option value="gold">ذهبي</option>
@@ -306,7 +306,7 @@ export function ContactForm() {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="أي تفاصيل إضافية تريد مشاركتها..."
-                  className="w-full px-4 py-3.5 rounded-xl bg-background border border-[oklch(0.88_0.01_90)] focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3.5 rounded-xl bg-background border border-border focus:border-gold-400 focus:ring-2 focus:ring-gold-400/20 outline-none transition-all resize-none"
                 />
               </div>
 
